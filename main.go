@@ -24,7 +24,26 @@ var header = `
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>mdindicator</title>
-<style>body {font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 1rem; line-height: 1.5; margin: auto; width: 80%;}</style>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: auto;
+    width: 80%;
+  }
+
+  pre {
+    background-color: #f7f7f7;
+    border-radius: 4px;
+    padding: 1rem;
+  }
+
+  pre > code {
+    font-family: menlo, monospace;
+    font-size: 0.66rem;
+  }
+</style>
 
 `
 
