@@ -13,7 +13,7 @@ import (
 	"github.com/russross/blackfriday"
 )
 
-var httpAddr = flag.String("http", ":8080", "http address")
+var httpAddr = flag.String("http", ":8080", "HTTP service address")
 
 func usage() {
 	log.Print("usage: mdindicator markdownfile")
