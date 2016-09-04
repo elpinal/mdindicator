@@ -24,7 +24,7 @@ var header = `
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>mdindicator</title>
-<style>body {margin: auto; width: 80%}</style>
+<style>body {font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 1rem; line-height: 1.5; margin: auto; width: 80%;}</style>
 
 `
 
