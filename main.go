@@ -7,7 +7,9 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/russross/blackfriday"
 )
 
@@ -26,10 +28,22 @@ var header = `
 
 `
 
-func index(html []byte) func(http.ResponseWriter, *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, header + string(html))
+var html string
+
+func index(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprint(w, header+html)
+}
+
+func convert(file string) error {
+	input, err := ioutil.ReadFile(file)
+	if err != nil {
+		return err
 	}
+
+	output := blackfriday.MarkdownCommon(input)
+	html = string(output)
+
+	return nil
 }
 
 func main() {
@@ -45,14 +59,44 @@ func main() {
 	}
 
 	file := flag.Arg(0)
-	input, err := ioutil.ReadFile(file)
-	if err != nil {
+	if err := convert(file); err != nil {
 		log.Print(err)
 		os.Exit(1)
 	}
 
-	output := blackfriday.MarkdownCommon(input)
+	go watch(file)
 
-	http.HandleFunc("/", index(output))
+	http.HandleFunc("/", index)
 	log.Fatal(http.ListenAndServe(*httpAddr, nil))
+}
+
+func watch(file string) {
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer watcher.Close()
+
+	done := make(chan bool)
+	go func() {
+		for {
+			select {
+			case event := <-watcher.Events:
+				if event.Name == file && (event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Create == fsnotify.Create) {
+					if err := convert(file); err != nil {
+						log.Print(err)
+					}
+				}
+			case err := <-watcher.Errors:
+				log.Println("error:", err)
+			}
+		}
+	}()
+
+	err = watcher.Add(filepath.Dir(file))
+	if err != nil {
+		log.Fatal(err)
+	}
+	<-done
+	log.Print("after done")
 }
