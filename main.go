@@ -106,7 +106,7 @@ func watch(file string) {
 					}
 				}
 			case err := <-watcher.Errors:
-				log.Println("error:", err)
+				log.Printf("watcher: %v", err)
 			}
 		}
 	}()
