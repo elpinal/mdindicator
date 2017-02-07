@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -20,7 +19,7 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-var header = `
+var header = []byte(`
 <!DOCTYPE html>
 <meta charset="utf-8">
 <title>mdindicator</title>
@@ -45,12 +44,13 @@ var header = `
   }
 </style>
 
-`
+`)
 
-var html string
+var html []byte
 
 func index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, header+html)
+	w.Write(header)
+	w.Write(html)
 }
 
 func convert(file string) error {
@@ -58,8 +58,7 @@ func convert(file string) error {
 	if err != nil {
 		return err
 	}
-	output := blackfriday.MarkdownCommon(input)
-	html = string(output)
+	html = blackfriday.MarkdownCommon(input)
 	return nil
 }
 
