@@ -115,5 +115,4 @@ func watch(file string) {
 		log.Fatal(err)
 	}
 	<-done
-	log.Print("after done")
 }
