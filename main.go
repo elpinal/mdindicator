@@ -71,8 +71,7 @@ func main() {
 	flag.Usage = usage
 	flag.Parse()
 
-	narg := flag.NArg()
-	if narg != 1 {
+	if flag.NArg() != 1 {
 		flag.Usage()
 		os.Exit(1)
 	}
