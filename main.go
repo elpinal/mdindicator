@@ -93,7 +93,6 @@ func watch(file string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer watcher.Close()
 
 	if err := watcher.Add(filepath.Dir(file)); err != nil {
 		log.Fatal(err)
