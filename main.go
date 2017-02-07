@@ -19,8 +19,7 @@ func usage() {
 	flag.PrintDefaults()
 }
 
-var header = []byte(`
-<!DOCTYPE html>
+var header = []byte(`<!DOCTYPE html>
 <meta charset="utf-8">
 <title>mdindicator</title>
 <style>
