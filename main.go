@@ -58,32 +58,25 @@ func convert(file string) error {
 	if err != nil {
 		return err
 	}
-
 	output := blackfriday.MarkdownCommon(input)
 	html = string(output)
-
 	return nil
 }
 
 func main() {
 	log.SetFlags(0)
-
 	flag.Usage = usage
 	flag.Parse()
-
 	if flag.NArg() != 1 {
 		flag.Usage()
 		os.Exit(1)
 	}
-
 	file := flag.Arg(0)
 	if err := convert(file); err != nil {
 		log.Print(err)
 		os.Exit(1)
 	}
-
 	go watch(file)
-
 	http.HandleFunc("/", index)
 	log.Fatal(http.ListenAndServe(*httpAddr, nil))
 }
@@ -93,11 +86,9 @@ func watch(file string) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	if err := watcher.Add(filepath.Dir(file)); err != nil {
 		log.Fatal(err)
 	}
-
 	for {
 		select {
 		case event := <-watcher.Events:
