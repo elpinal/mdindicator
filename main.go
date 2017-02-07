@@ -95,24 +95,20 @@ func watch(file string) {
 	}
 	defer watcher.Close()
 
-	done := make(chan bool)
-	go func() {
-		for {
-			select {
-			case event := <-watcher.Events:
-				if event.Name == file && (event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Create == fsnotify.Create) {
-					if err := convert(file); err != nil {
-						log.Print(err)
-					}
-				}
-			case err := <-watcher.Errors:
-				log.Printf("watcher: %v", err)
-			}
-		}
-	}()
-
 	if err := watcher.Add(filepath.Dir(file)); err != nil {
 		log.Fatal(err)
 	}
-	<-done
+
+	for {
+		select {
+		case event := <-watcher.Events:
+			if event.Name == file && (event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Create == fsnotify.Create) {
+				if err := convert(file); err != nil {
+					log.Print(err)
+				}
+			}
+		case err := <-watcher.Errors:
+			log.Printf("watcher: %v", err)
+		}
+	}
 }
