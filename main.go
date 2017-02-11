@@ -7,8 +7,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/fsnotify/fsnotify"
+	"github.com/pkg/errors"
 	"github.com/russross/blackfriday"
 )
 
@@ -45,22 +47,6 @@ var header = []byte(`<!DOCTYPE html>
 
 `)
 
-var html []byte
-
-func index(w http.ResponseWriter, r *http.Request) {
-	w.Write(header)
-	w.Write(html)
-}
-
-func convert(file string) error {
-	input, err := ioutil.ReadFile(file)
-	if err != nil {
-		return err
-	}
-	html = blackfriday.MarkdownCommon(input)
-	return nil
-}
-
 func main() {
 	log.SetFlags(0)
 	flag.Usage = usage
@@ -69,34 +55,60 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	file := flag.Arg(0)
-	if err := convert(file); err != nil {
+	p := &provider{name: flag.Arg(0)}
+	if err := p.convert(); err != nil {
 		log.Print(err)
 		os.Exit(1)
 	}
-	go watch(file)
-	http.HandleFunc("/", index)
+	go p.watch()
+	http.Handle("/", p)
 	log.Fatal(http.ListenAndServe(*httpAddr, nil))
 }
 
-func watch(file string) {
+type provider struct {
+	name string
+
+	mu   sync.Mutex
+	html []byte
+}
+
+func (p *provider) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Write(header)
+	p.mu.Lock()
+	w.Write(p.html)
+	p.mu.Unlock()
+}
+
+func (p *provider) convert() error {
+	input, err := ioutil.ReadFile(p.name)
+	if err != nil {
+		return err
+	}
+	html := blackfriday.MarkdownCommon(input)
+	p.mu.Lock()
+	p.html = html
+	p.mu.Unlock()
+	return nil
+}
+
+func (p *provider) watch() error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	if err := watcher.Add(filepath.Dir(file)); err != nil {
-		log.Fatal(err)
+	if err := watcher.Add(filepath.Dir(p.name)); err != nil {
+		return err
 	}
 	for {
 		select {
 		case event := <-watcher.Events:
-			if event.Name == file && (event.Op&fsnotify.Write == fsnotify.Write || event.Op&fsnotify.Create == fsnotify.Create) {
-				if err := convert(file); err != nil {
-					log.Print(err)
+			if event.Name == p.name {
+				if err := p.convert(); err != nil {
+					return err
 				}
 			}
 		case err := <-watcher.Errors:
-			log.Printf("watcher: %v", err)
+			return errors.Wrap(err, "watcher")
 		}
 	}
 }
