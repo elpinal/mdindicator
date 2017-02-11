@@ -57,6 +57,7 @@ func main() {
 	}
 	if err := serve(flag.Arg(0)); err != nil {
 		log.Print(err)
+		os.Exit(1)
 	}
 }
 
