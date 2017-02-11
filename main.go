@@ -120,7 +120,7 @@ func (p *provider) watch() error {
 	for {
 		select {
 		case event := <-watcher.Events:
-			if event.Name == p.name {
+			if event.Name == p.name && event.Op != fsnotify.Rename {
 				if err := p.convert(); err != nil {
 					return err
 				}
