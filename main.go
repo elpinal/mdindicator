@@ -60,7 +60,12 @@ func main() {
 		log.Print(err)
 		os.Exit(1)
 	}
-	go p.watch()
+	go func() {
+		err := p.watch()
+		if err != nil {
+			log.Print(err)
+		}
+	}()
 	http.Handle("/", p)
 	log.Fatal(http.ListenAndServe(*httpAddr, nil))
 }
