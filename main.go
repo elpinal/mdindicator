@@ -55,19 +55,31 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	p := &provider{name: flag.Arg(0)}
-	if err := p.convert(); err != nil {
+	if err := serve(flag.Arg(0)); err != nil {
 		log.Print(err)
-		os.Exit(1)
 	}
+}
+
+func serve(name string) error {
+	p := &provider{name: name}
+	if err := p.convert(); err != nil {
+		return err
+	}
+	errch := make(chan error)
 	go func() {
 		err := p.watch()
 		if err != nil {
-			log.Print(err)
+			errch <- err
 		}
 	}()
 	http.Handle("/", p)
-	log.Fatal(http.ListenAndServe(*httpAddr, nil))
+	go func() {
+		err := http.ListenAndServe(*httpAddr, nil)
+		if err != nil {
+			errch <- err
+		}
+	}()
+	return <-errch
 }
 
 type provider struct {
