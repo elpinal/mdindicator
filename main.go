@@ -40,8 +40,12 @@ var header = []byte(`<!DOCTYPE html>
   }
 
   pre > code {
-    font-family: menlo, monospace;
     font-size: 0.66rem;
+  }
+
+  code {
+    font-family: menlo, monospace;
+    font-size: 0.9rem;
   }
 </style>
 
