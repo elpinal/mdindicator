@@ -1,7 +1,5 @@
 # Mdindicator
 
-Markdown indicator
-
 `mdindicator` provides a facility to watch a markdown file, and serve it as an HTML.
 
 ## Install
