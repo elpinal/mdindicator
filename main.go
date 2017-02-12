@@ -14,8 +14,6 @@ import (
 	"github.com/russross/blackfriday"
 )
 
-var httpAddr = flag.String("http", ":8080", "HTTP service address")
-
 func usage() {
 	log.Print("usage: mdindicator markdownfile")
 	flag.PrintDefaults()
@@ -52,6 +50,7 @@ var header = []byte(`<!DOCTYPE html>
 `)
 
 func main() {
+	var httpAddr = flag.String("http", ":8080", "HTTP service address")
 	log.SetFlags(0)
 	flag.Usage = usage
 	flag.Parse()
@@ -59,13 +58,13 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	if err := serve(flag.Arg(0)); err != nil {
+	if err := serve(*httpAddr, flag.Arg(0)); err != nil {
 		log.Print(err)
 		os.Exit(1)
 	}
 }
 
-func serve(name string) error {
+func serve(addr, name string) error {
 	p := &provider{name: name}
 	if err := p.convert(); err != nil {
 		return err
@@ -79,7 +78,7 @@ func serve(name string) error {
 	}()
 	http.Handle("/", p)
 	go func() {
-		err := http.ListenAndServe(*httpAddr, nil)
+		err := http.ListenAndServe(addr, nil)
 		if err != nil {
 			errch <- err
 		}
