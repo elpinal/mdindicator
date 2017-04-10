@@ -51,6 +51,7 @@ var header = []byte(`<!DOCTYPE html>
 
 func main() {
 	var httpAddr = flag.String("http", ":8080", "HTTP service address")
+	var verbose = flag.Bool("verbose", false, "set verbose")
 	log.SetFlags(0)
 	flag.Usage = usage
 	flag.Parse()
@@ -58,20 +59,23 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	if err := serve(*httpAddr, flag.Arg(0)); err != nil {
+	if err := serve(*httpAddr, flag.Arg(0), *verbose); err != nil {
 		log.Print(err)
 		os.Exit(1)
 	}
 }
 
-func serve(addr, name string) error {
+func serve(addr, name string, verbose bool) error {
+	if verbose {
+		log.Printf("starting with %s", name)
+	}
 	p := &provider{name: name}
 	if err := p.convert(); err != nil {
 		return err
 	}
 	errch := make(chan error)
 	go func() {
-		err := p.watch()
+		err := p.watch(verbose)
 		if err != nil {
 			errch <- err
 		}
@@ -112,10 +116,13 @@ func (p *provider) convert() error {
 	return nil
 }
 
-func (p *provider) watch() error {
+func (p *provider) watch(verbose bool) error {
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
 		return err
+	}
+	if verbose {
+		log.Printf("watching %s", filepath.Dir(p.name))
 	}
 	if err := watcher.Add(filepath.Dir(p.name)); err != nil {
 		return err
@@ -124,6 +131,9 @@ func (p *provider) watch() error {
 		select {
 		case event := <-watcher.Events:
 			if event.Name == p.name && event.Op != fsnotify.Rename {
+				if verbose {
+					log.Printf("caught event (%s): %v", p.name, event.Op)
+				}
 				if err := p.convert(); err != nil {
 					return err
 				}
