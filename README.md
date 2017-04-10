@@ -28,6 +28,12 @@ To change port:
 $ mdindicator -http :8888 README.md
 ```
 
+To get the verbose output:
+
+```bash
+$ mdindicator -verbose README.md
+```
+
 ## Contribution
 
 1. Fork ([https://github.com/elpinal/mdindicator/fork](https://github.com/elpinal/mdindicator/fork))
