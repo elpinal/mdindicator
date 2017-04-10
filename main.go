@@ -59,7 +59,7 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
-	if err := serve(*httpAddr, flag.Arg(0), *verbose); err != nil {
+	if err := serve(*httpAddr, filepath.Clean(flag.Arg(0)), *verbose); err != nil {
 		log.Print(err)
 		os.Exit(1)
 	}
@@ -130,7 +130,7 @@ func (p *provider) watch(verbose bool) error {
 	for {
 		select {
 		case event := <-watcher.Events:
-			if event.Name == p.name && event.Op != fsnotify.Rename {
+			if filepath.Clean(event.Name) == p.name && event.Op != fsnotify.Rename {
 				if verbose {
 					log.Printf("caught event (%s): %v", p.name, event.Op)
 				}
