@@ -15,7 +15,9 @@ import (
 )
 
 func usage() {
-	log.Print("usage: mdindicator markdownfile")
+	log.Print("usage: mdindicator [markdownfile]")
+	log.Print("If given no argument, then README.md, if any, is used as a target.")
+	log.Print()
 	flag.PrintDefaults()
 }
 
@@ -55,12 +57,26 @@ func main() {
 	log.SetFlags(0)
 	flag.Usage = usage
 	flag.Parse()
-	if flag.NArg() != 1 {
+
+	filename := "README.md"
+
+	if n := flag.NArg(); n == 1 {
+		filename = flag.Arg(0)
+	} else if n > 1 {
 		flag.Usage()
 		os.Exit(1)
+	} else {
+		_, err := os.Stat(filename)
+		if err != nil {
+			flag.Usage()
+			os.Exit(1)
+		}
 	}
+
+	log.Printf("filename: %s", filename)
 	log.Printf("http://localhost%s", *httpAddr)
-	if err := serve(*httpAddr, filepath.Clean(flag.Arg(0)), *verbose); err != nil {
+
+	if err := serve(*httpAddr, filepath.Clean(filename), *verbose); err != nil {
 		log.Print(err)
 		os.Exit(1)
 	}
