@@ -11,7 +11,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/pkg/errors"
-	"github.com/russross/blackfriday"
+	"github.com/russross/blackfriday/v2"
 )
 
 func usage() {
@@ -110,7 +110,7 @@ func (p *provider) convert() error {
 	if err != nil {
 		return err
 	}
-	html := blackfriday.MarkdownCommon(input)
+	html := blackfriday.Run(input)
 	p.mu.Lock()
 	p.html = html
 	p.mu.Unlock()
