@@ -50,7 +50,7 @@ var header = []byte(`<!DOCTYPE html>
 `)
 
 func main() {
-	var httpAddr = flag.String("http", ":8080", "HTTP service address")
+	var httpAddr = flag.String("http", ":9999", "HTTP service address")
 	var verbose = flag.Bool("verbose", false, "set verbose")
 	log.SetFlags(0)
 	flag.Usage = usage
@@ -59,6 +59,7 @@ func main() {
 		flag.Usage()
 		os.Exit(1)
 	}
+	log.Printf("http://localhost%s", *httpAddr)
 	if err := serve(*httpAddr, filepath.Clean(flag.Arg(0)), *verbose); err != nil {
 		log.Print(err)
 		os.Exit(1)

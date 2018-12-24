@@ -20,7 +20,7 @@ Basic usage:
 $ mdindicator README.md
 ```
 
-then, see http://localhost:8080.
+then, see http://localhost:9999.
 
 To change port:
 
